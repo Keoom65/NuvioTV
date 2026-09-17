@@ -176,7 +176,8 @@ fun LocalScraperResult.toStream(scraper: ScraperInfo): com.nuvio.tv.domain.model
             notWebReady = null,
             bingeGroup = "local-plugin-${scraper.id}",
             countryWhitelist = null,
-            proxyHeaders = headers?.let { ProxyHeaders(request = it, response = null) }
+            proxyHeaders = headers?.let { ProxyHeaders(request = it, response = null) },
+            filename = title.takeIf { it.isNotBlank() }
         ),
         addonName = scraper.name,
         addonLogo = scraper.logo,
