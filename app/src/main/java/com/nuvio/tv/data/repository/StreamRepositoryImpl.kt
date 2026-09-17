@@ -511,13 +511,16 @@ class StreamRepositoryImpl @Inject constructor(
             addonName = addonName,
             addonLogo = null,
             description = buildDescription(this),
-            behaviorHints = headers?.let { headers ->
+            behaviorHints = if (headers != null || displayTitle != null) {
                 StreamBehaviorHints(
                     notWebReady = null,
                     bingeGroup = null,
                     countryWhitelist = null,
-                    proxyHeaders = ProxyHeaders(request = headers, response = null)
+                    proxyHeaders = headers?.let { ProxyHeaders(request = it, response = null) },
+                    filename = displayTitle
                 )
+            } else {
+                null
             },
             infoHash = infoHash,
             fileIdx = null,
