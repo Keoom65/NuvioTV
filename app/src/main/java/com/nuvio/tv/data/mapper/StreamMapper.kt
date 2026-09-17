@@ -16,21 +16,29 @@ import com.nuvio.tv.domain.model.StreamClientResolveParsed
 import com.nuvio.tv.domain.model.StreamClientResolveRaw
 import com.nuvio.tv.domain.model.StreamClientResolveStream
 
-fun StreamDto.toDomain(addonName: String, addonLogo: String?): Stream = Stream(
-    name = name,
-    title = title,
-    description = description,
-    url = url,
-    ytId = ytId,
-    infoHash = infoHash,
-    fileIdx = fileIdx,
-    externalUrl = externalUrl,
-    behaviorHints = behaviorHints?.toDomain(),
-    addonName = addonName,
-    addonLogo = addonLogo,
-    sources = sources,
-    clientResolve = clientResolve?.toDomain(),
-    subtitles = subtitles.orEmpty().mapNotNull { dto ->
+fun StreamDto.toDomain(addonName: String, addonLogo: String?): Stream {
+    val resolve = clientResolve?.toDomain()
+    val mappedHints = behaviorHints?.toDomain()
+    val filename = mappedHints?.filename?.takeIf { it.isNotBlank() }
+        ?: resolve?.filename?.takeIf { it.isNotBlank() }
+        ?: resolve?.stream?.raw?.filename?.takeIf { it.isNotBlank() }
+        ?: title?.takeIf { it.isNotBlank() }
+
+    return Stream(
+        name = name,
+        title = title,
+        description = description,
+        url = url,
+        ytId = ytId,
+        infoHash = infoHash,
+        fileIdx = fileIdx,
+        externalUrl = externalUrl,
+        behaviorHints = mappedHints.withFilename(filename),
+        addonName = addonName,
+        addonLogo = addonLogo,
+        sources = sources,
+        clientResolve = resolve,
+        subtitles = subtitles.orEmpty().mapNotNull { dto ->
         val url = dto.url.takeIf { it.isNotBlank() } ?: return@mapNotNull null
         Subtitle(
             id = dto.id?.takeIf { it.isNotBlank() } ?: url,
@@ -41,8 +49,20 @@ fun StreamDto.toDomain(addonName: String, addonLogo: String?): Stream = Stream(
             isStreamProvided = true,
             headers = dto.headers
         )
-    }
-)
+        }
+    )
+}
+
+private fun StreamBehaviorHints?.withFilename(filename: String?): StreamBehaviorHints? {
+    if (filename.isNullOrBlank()) return this
+    return this?.copy(filename = filename) ?: StreamBehaviorHints(
+        notWebReady = null,
+        bingeGroup = null,
+        countryWhitelist = null,
+        proxyHeaders = null,
+        filename = filename
+    )
+}
 
 fun StreamClientResolveDto.toDomain(): StreamClientResolve = StreamClientResolve(
     type = type,
