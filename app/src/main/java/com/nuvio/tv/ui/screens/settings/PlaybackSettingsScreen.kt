@@ -136,6 +136,7 @@ fun PlaybackSettingsContent(
     var showAudioOutputChannelsDialog by remember { mutableStateOf(false) }
     var showDecoderPriorityDialog by remember { mutableStateOf(false) }
     var showMpvHardwareDecodeModeDialog by remember { mutableStateOf(false) }
+    var showMpvConfigDialog by remember { mutableStateOf(false) }
     var showStreamAutoPlayModeDialog by remember { mutableStateOf(false) }
     var showStreamAutoPlaySourceDialog by remember { mutableStateOf(false) }
     var showStreamAutoPlayAddonSelectionDialog by remember { mutableStateOf(false) }
@@ -158,6 +159,7 @@ fun PlaybackSettingsContent(
         showAudioOutputChannelsDialog = false
         showDecoderPriorityDialog = false
         showMpvHardwareDecodeModeDialog = false
+        showMpvConfigDialog = false
         showDv7HandlingModeDialog = false
         showStreamAutoPlayModeDialog = false
         showStreamAutoPlaySourceDialog = false
@@ -207,6 +209,7 @@ fun PlaybackSettingsContent(
                 onShowAudioOutputChannelsDialog = { openDialog { showAudioOutputChannelsDialog = true } },
                 onShowDecoderPriorityDialog = { openDialog { showDecoderPriorityDialog = true } },
                 onShowMpvHardwareDecodeModeDialog = { openDialog { showMpvHardwareDecodeModeDialog = true } },
+                onShowMpvConfigDialog = { openDialog { showMpvConfigDialog = true } },
                 onShowLanguageDialog = { openDialog { showLanguageDialog = true } },
                 onShowSecondaryLanguageDialog = { openDialog { showSecondaryLanguageDialog = true } },
                 onShowTextColorDialog = { openDialog { showTextColorDialog = true } },
@@ -320,6 +323,9 @@ fun PlaybackSettingsContent(
                     coroutineScope.launch {
                         viewModel.setMpvHi10pGnextSoftwareFallbackEnabled(enabled)
                     }
+                },
+                onSetMpvConfig = { config ->
+                    coroutineScope.launch { viewModel.setMpvConfig(config) }
                 },
                 onSetBufferEngineEnabled = { enabled ->
                     coroutineScope.launch { viewModel.setBufferEngineEnabled(enabled) }
@@ -519,6 +525,7 @@ fun PlaybackSettingsContent(
         showAudioOutputChannelsDialog = showAudioOutputChannelsDialog,
         showDecoderPriorityDialog = showDecoderPriorityDialog,
         showMpvHardwareDecodeModeDialog = showMpvHardwareDecodeModeDialog,
+        showMpvConfigDialog = showMpvConfigDialog,
         showDv7HandlingModeDialog = showDv7HandlingModeDialog,
         showStreamAutoPlayModeDialog = showStreamAutoPlayModeDialog,
         showStreamAutoPlaySourceDialog = showStreamAutoPlaySourceDialog,
@@ -565,6 +572,9 @@ fun PlaybackSettingsContent(
         onSetMpvHardwareDecodeMode = { mode ->
             coroutineScope.launch { viewModel.setMpvHardwareDecodeMode(mode) }
         },
+        onSetMpvConfig = { config ->
+            coroutineScope.launch { viewModel.setMpvConfig(config) }
+        },
         onSetDv7HandlingMode = { mode ->
             coroutineScope.launch { viewModel.setDv7HandlingMode(mode) }
         },
@@ -599,6 +609,7 @@ fun PlaybackSettingsContent(
         onDismissAudioOutputChannelsDialog = ::dismissAllDialogs,
         onDismissDecoderPriorityDialog = ::dismissAllDialogs,
         onDismissMpvHardwareDecodeModeDialog = ::dismissAllDialogs,
+        onDismissMpvConfigDialog = ::dismissAllDialogs,
         onDismissDv7HandlingModeDialog = ::dismissAllDialogs,
         onDismissStreamAutoPlayModeDialog = ::dismissAllDialogs,
         onDismissStreamAutoPlaySourceDialog = ::dismissAllDialogs,

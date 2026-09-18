@@ -420,6 +420,11 @@ internal fun PlayerRuntimeController.observeSubtitleSettings() {
 
             val previousMpvHardwareDecodeMode = mpvHardwareDecodeModeSetting
             mpvHardwareDecodeModeSetting = settings.mpvHardwareDecodeMode
+            val previousMpvConfig = mpvConfigSetting
+            mpvConfigSetting = settings.mpvConfig
+            if (isUsingMpvEngine() && previousMpvConfig != mpvConfigSetting) {
+                mpvView?.applyMpvConfig(mpvConfigSetting)
+            }
             if (isUsingMpvEngine() && previousMpvHardwareDecodeMode != mpvHardwareDecodeModeSetting) {
                 mpvView?.applyHardwareDecodeMode(mpvHardwareDecodeModeSetting)
             }

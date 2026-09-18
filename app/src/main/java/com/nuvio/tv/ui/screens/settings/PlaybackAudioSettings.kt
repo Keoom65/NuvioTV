@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
@@ -43,6 +44,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.nuvio.tv.R
 import androidx.tv.material3.Border
 import androidx.tv.material3.Card
@@ -68,6 +73,7 @@ internal fun LazyListScope.trailerAndAudioSettingsItems(
     onShowAudioOutputChannelsDialog: () -> Unit,
     onShowDecoderPriorityDialog: () -> Unit,
     onShowMpvHardwareDecodeModeDialog: () -> Unit,
+    onShowMpvConfigDialog: () -> Unit,
     onShowDv7HandlingModeDialog: () -> Unit,
     onSetDownmixEnabled: (Boolean) -> Unit,
     onSetMaintainOriginalAudioOnDownmix: (Boolean) -> Unit,
@@ -382,6 +388,21 @@ internal fun LazyListScope.trailerAndAudioSettingsItems(
                 enabled = enabled
             )
         }
+
+        item(key = "audio_mpv_config") {
+            NavigationSettingsItem(
+                icon = Icons.Default.Tune,
+                title = stringResource(R.string.audio_mpv_config_title),
+                subtitle = if (playerSettings.mpvConfig.isBlank()) {
+                    stringResource(R.string.audio_mpv_config_subtitle_empty)
+                } else {
+                    stringResource(R.string.audio_mpv_config_subtitle_configured)
+                },
+                onClick = onShowMpvConfigDialog,
+                onFocused = onItemFocused,
+                enabled = enabled
+            )
+        }
     }
 }
 
@@ -392,24 +413,28 @@ internal fun AudioSettingsDialogs(
     showAudioOutputChannelsDialog: Boolean,
     showDecoderPriorityDialog: Boolean,
     showMpvHardwareDecodeModeDialog: Boolean,
+    showMpvConfigDialog: Boolean,
     showDv7HandlingModeDialog: Boolean,
     selectedLanguage: String,
     selectedSecondaryLanguage: String?,
     selectedAudioOutputChannels: AudioOutputChannels,
     selectedPriority: Int,
     selectedMpvHardwareDecodeMode: MpvHardwareDecodeMode,
+    selectedMpvConfig: String,
     selectedDv7HandlingMode: Dv7HandlingMode,
     onSetPreferredAudioLanguage: (String) -> Unit,
     onSetSecondaryPreferredAudioLanguage: (String?) -> Unit,
     onSetAudioOutputChannels: (AudioOutputChannels) -> Unit,
     onSetDecoderPriority: (Int) -> Unit,
     onSetMpvHardwareDecodeMode: (MpvHardwareDecodeMode) -> Unit,
+    onSetMpvConfig: (String) -> Unit,
     onSetDv7HandlingMode: (Dv7HandlingMode) -> Unit,
     onDismissAudioLanguageDialog: () -> Unit,
     onDismissSecondaryAudioLanguageDialog: () -> Unit,
     onDismissAudioOutputChannelsDialog: () -> Unit,
     onDismissDecoderPriorityDialog: () -> Unit,
     onDismissMpvHardwareDecodeModeDialog: () -> Unit,
+    onDismissMpvConfigDialog: () -> Unit,
     onDismissDv7HandlingModeDialog: () -> Unit
 ) {
     if (showAudioLanguageDialog) {
@@ -472,6 +497,17 @@ internal fun AudioSettingsDialogs(
         )
     }
 
+    if (showMpvConfigDialog) {
+        MpvConfigDialog(
+            currentConfig = selectedMpvConfig,
+            onSave = {
+                onSetMpvConfig(it)
+                onDismissMpvConfigDialog()
+            },
+            onDismiss = onDismissMpvConfigDialog
+        )
+    }
+
     if (showDv7HandlingModeDialog) {
         Dv7HandlingModeDialog(
             selectedMode = selectedDv7HandlingMode,
@@ -482,7 +518,75 @@ internal fun AudioSettingsDialogs(
             onDismiss = onDismissDv7HandlingModeDialog
         )
     }
-}
+    }
+
+    @Composable
+    private fun MpvConfigDialog(
+        currentConfig: String,
+        onSave: (String) -> Unit,
+        onDismiss: () -> Unit
+    ) {
+        var value by remember(currentConfig) { mutableStateOf(currentConfig) }
+        val focusRequester = remember { FocusRequester() }
+        val keyboardController = LocalSoftwareKeyboardController.current
+
+        LaunchedEffect(Unit) { focusRequester.requestFocus() }
+
+        NuvioDialog(
+            onDismiss = onDismiss,
+            title = stringResource(R.string.audio_mpv_config_title),
+            subtitle = stringResource(R.string.audio_mpv_config_dialog_subtitle),
+            width = 700.dp
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md)) {
+                Card(
+                    onClick = { focusRequester.requestFocus() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.colors(
+                        containerColor = NuvioTheme.colors.BackgroundElevated,
+                        focusedContainerColor = NuvioTheme.colors.BackgroundElevated
+                    ),
+                    shape = CardDefaults.shape(RoundedCornerShape(10.dp))
+                ) {
+                    BasicTextField(
+                        value = value,
+                        onValueChange = { value = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 220.dp, max = 420.dp)
+                            .padding(14.dp)
+                            .focusRequester(focusRequester),
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = NuvioTheme.colors.TextPrimary),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        )
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.audio_mpv_config_restart_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = NuvioTheme.colors.TextSecondary
+                )
+                Card(
+                    onClick = { onSave(value) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.colors(
+                        containerColor = NuvioTheme.colors.Primary,
+                        focusedContainerColor = NuvioTheme.colors.Primary
+                    ),
+                    shape = CardDefaults.shape(RoundedCornerShape(10.dp))
+                ) {
+                    Text(
+                        text = stringResource(R.string.web_btn_save),
+                        modifier = Modifier.padding(14.dp),
+                        color = NuvioTheme.colors.OnPrimary,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+    }
 
 @Composable
 private fun AudioOutputChannelsDialog(

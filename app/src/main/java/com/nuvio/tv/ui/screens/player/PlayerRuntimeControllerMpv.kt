@@ -23,6 +23,7 @@ internal fun PlayerRuntimeController.attachMpvView(view: NuvioMpvSurfaceView?) {
 
     runCatching {
         performPendingMpvHardRestartIfNeeded(view)
+        view.applyMpvConfig(mpvConfigSetting)
         view.applyHi10pGnextSoftwareFallback(shouldUseMpvHi10pGnextSoftwareFallback())
         view.applyHardwareDecodeMode(mpvHardwareDecodeModeSetting)
         view.setMedia(currentStreamUrl, currentHeaders)
@@ -120,6 +121,7 @@ internal fun PlayerRuntimeController.initializeMpvPlayer(
             showOverlay = true
         )
         performPendingMpvHardRestartIfNeeded(view)
+        view.applyMpvConfig(mpvConfigSetting)
         view.applyHi10pGnextSoftwareFallback(shouldUseMpvHi10pGnextSoftwareFallback())
         view.applyHardwareDecodeMode(mpvHardwareDecodeModeSetting)
         val initialResumePosition = resolvePendingInitialResumePosition()
