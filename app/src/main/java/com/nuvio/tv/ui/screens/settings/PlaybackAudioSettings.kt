@@ -210,45 +210,6 @@ internal fun LazyListScope.trailerAndAudioSettingsItems(
             )
         }
 
-        item(key = "audio_enable_downmix") {
-            ToggleSettingsItem(
-                icon = Icons.Default.Tune,
-                title = stringResource(R.string.audio_enable_downmix_title),
-                subtitle = stringResource(R.string.audio_enable_downmix_subtitle),
-                // Show off outside Prefer app decoders so a persisted value doesn't
-                // read as active (same pattern as optical passthrough / DV8.1-only toggles).
-                isChecked = playerSettings.effectiveDownmixEnabled,
-                onCheckedChange = onSetDownmixEnabled,
-                onFocused = onItemFocused,
-                enabled = enabled && playerSettings.isPreferAppDecoder
-            )
-        }
-
-        if (playerSettings.effectiveDownmixEnabled) {
-            item(key = "audio_number_of_channels") {
-                NavigationSettingsItem(
-                    icon = Icons.Default.VolumeUp,
-                    title = stringResource(R.string.audio_number_of_channels),
-                    subtitle = playerSettings.audioOutputChannels.displayLabel,
-                    onClick = onShowAudioOutputChannelsDialog,
-                    onFocused = onItemFocused,
-                    enabled = enabled
-                )
-            }
-
-            item(key = "audio_downmix_normalization") {
-                ToggleSettingsItem(
-                    icon = Icons.Default.Tune,
-                    title = stringResource(R.string.audio_maintain_original_audio_on_downmix_title),
-                    subtitle = stringResource(R.string.audio_maintain_original_audio_on_downmix_subtitle),
-                    isChecked = playerSettings.maintainOriginalAudioOnDownmix,
-                    onCheckedChange = onSetMaintainOriginalAudioOnDownmix,
-                    onFocused = onItemFocused,
-                    enabled = enabled
-                )
-            }
-        }
-
         item(key = "audio_tunneled_playback") {
             ToggleSettingsItem(
                 icon = Icons.Default.VolumeUp,
@@ -276,6 +237,62 @@ internal fun LazyListScope.trailerAndAudioSettingsItems(
                     onFocused = onItemFocused,
                     enabled = enabled && playerSettings.decoderPriority != 0
                 )
+            }
+        }
+
+        if (isMpvEngine) {
+            item(key = "audio_mpv_downmix_header") {
+                Spacer(modifier = Modifier.height(NuvioTheme.spacing.lg))
+                Text(
+                    text = stringResource(R.string.audio_advanced_section),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = NuvioTheme.colors.TextSecondary,
+                    modifier = Modifier.padding(vertical = NuvioTheme.spacing.sm)
+                )
+            }
+        }
+
+        if (isExoEngine || isMpvEngine) {
+            val downmixEnabled = if (isMpvEngine && !isExoEngine) {
+                playerSettings.downmixEnabled
+            } else {
+                playerSettings.effectiveDownmixEnabled
+            }
+            item(key = "audio_enable_downmix") {
+                ToggleSettingsItem(
+                    icon = Icons.Default.Tune,
+                    title = stringResource(R.string.audio_enable_downmix_title),
+                    subtitle = stringResource(R.string.audio_enable_downmix_subtitle),
+                    isChecked = downmixEnabled,
+                    onCheckedChange = onSetDownmixEnabled,
+                    onFocused = onItemFocused,
+                    enabled = enabled && (isMpvEngine || playerSettings.isPreferAppDecoder)
+                )
+            }
+
+            if (downmixEnabled) {
+                item(key = "audio_number_of_channels") {
+                    NavigationSettingsItem(
+                        icon = Icons.Default.VolumeUp,
+                        title = stringResource(R.string.audio_number_of_channels),
+                        subtitle = playerSettings.audioOutputChannels.displayLabel,
+                        onClick = onShowAudioOutputChannelsDialog,
+                        onFocused = onItemFocused,
+                        enabled = enabled
+                    )
+                }
+
+                item(key = "audio_downmix_normalization") {
+                    ToggleSettingsItem(
+                        icon = Icons.Default.Tune,
+                        title = stringResource(R.string.audio_maintain_original_audio_on_downmix_title),
+                        subtitle = stringResource(R.string.audio_maintain_original_audio_on_downmix_subtitle),
+                        isChecked = playerSettings.maintainOriginalAudioOnDownmix,
+                        onCheckedChange = onSetMaintainOriginalAudioOnDownmix,
+                        onFocused = onItemFocused,
+                        enabled = enabled
+                    )
+                }
             }
         }
     }

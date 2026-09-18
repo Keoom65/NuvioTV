@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
 import com.nuvio.tv.data.local.MpvHardwareDecodeMode
+import com.nuvio.tv.data.local.AudioOutputChannels
 import com.nuvio.tv.data.local.SubtitleStyleSettings
 import `is`.xyz.mpv.BaseMPVView
 import `is`.xyz.mpv.Utils
@@ -267,6 +268,27 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
             mpv.setPropertyString("aid", "auto")
         }.onFailure {
             Log.w(TAG, "Failed to set audio language preference: ${it.message}")
+        }
+    }
+
+    fun applyAudioDownmixSettings(
+        enabled: Boolean,
+        outputChannels: AudioOutputChannels,
+        maintainOriginalAudio: Boolean,
+        centerMixLevelDb: Int
+    ) {
+        if (!initialized) return
+        val layout = if (enabled) outputChannels.ffmpegLayoutName else "auto"
+        // Match the FFmpeg/Kodi default center coefficient (-3 dB), then apply
+        // the user's persisted dB offset.
+        val centerMixLevel = (1.0 / kotlin.math.sqrt(2.0)) *
+            10.0.pow(centerMixLevelDb / 20.0)
+        runCatching {
+            mpv.setPropertyString("audio-channels", layout)
+            mpv.setPropertyBoolean("audio-normalize-downmix", enabled && maintainOriginalAudio)
+            mpv.setPropertyString("audio-swresample-o", "center_mix_level=$centerMixLevel")
+        }.onFailure {
+            Log.w(TAG, "Failed to apply MPV audio downmix settings: ${it.message}")
         }
     }
 

@@ -28,6 +28,13 @@ internal fun PlayerRuntimeController.attachMpvView(view: NuvioMpvSurfaceView?) {
         view.setMedia(currentStreamUrl, currentHeaders)
         view.setPlaybackSpeed(_uiState.value.playbackSpeed)
         view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb)
+        view.applyAudioDownmixSettings(
+            enabled = currentPlayerSettingsForReport?.downmixEnabled == true,
+            outputChannels = currentPlayerSettingsForReport?.audioOutputChannels
+                ?: com.nuvio.tv.data.local.AudioOutputChannels.CHANNELS_7_1,
+            maintainOriginalAudio = currentPlayerSettingsForReport?.maintainOriginalAudioOnDownmix == true,
+            centerMixLevelDb = _uiState.value.centerMixLevelDb
+        )
         view.applyAudioLanguagePreferences(mpvPreferredAudioLanguages)
         view.applySubtitleLanguagePreferences(
             preferred = _uiState.value.subtitleStyle.preferredLanguage,
