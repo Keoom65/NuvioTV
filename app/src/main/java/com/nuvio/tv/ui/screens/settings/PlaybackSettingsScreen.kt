@@ -324,9 +324,6 @@ fun PlaybackSettingsContent(
                         viewModel.setMpvHi10pGnextSoftwareFallbackEnabled(enabled)
                     }
                 },
-                onSetMpvConfig = { config ->
-                    coroutineScope.launch { viewModel.setMpvConfig(config) }
-                },
                 onSetBufferEngineEnabled = { enabled ->
                     coroutineScope.launch { viewModel.setBufferEngineEnabled(enabled) }
                     if (enabled) memoryUsageTrigger++
