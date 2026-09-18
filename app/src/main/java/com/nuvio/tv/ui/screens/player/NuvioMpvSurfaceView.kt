@@ -10,6 +10,7 @@ import com.nuvio.tv.data.local.AudioOutputChannels
 import com.nuvio.tv.data.local.SubtitleStyleSettings
 import `is`.xyz.mpv.BaseMPVView
 import `is`.xyz.mpv.Utils
+import java.io.File
 import java.util.Locale
 import kotlin.math.pow
 import kotlin.math.roundToLong
@@ -718,13 +719,22 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
             error("Unable to create MPV fonts directory: ${fontsDirectory.absolutePath}")
         }
 
-        val arabicFont = fontsDirectory.resolve(MPV_ARABIC_FONT_FILE)
-        if (!arabicFont.exists() || arabicFont.length() == 0L) {
-            context.resources.openRawResource(R.font.noto_sans_arabic_variable).use { input ->
-                arabicFont.outputStream().use { output -> input.copyTo(output) }
-            }
-        }
+        copyBundledFontIfMissing(
+            resourceId = R.font.noto_sans_arabic_variable,
+            destination = fontsDirectory.resolve(MPV_SANS_ARABIC_FONT_FILE)
+        )
+        copyBundledFontIfMissing(
+            resourceId = R.font.noto_naskh_arabic_variable,
+            destination = fontsDirectory.resolve(MPV_NASKH_ARABIC_FONT_FILE)
+        )
         return fontsDirectory.absolutePath
+    }
+
+    private fun copyBundledFontIfMissing(resourceId: Int, destination: File) {
+        if (destination.exists() && destination.length() > 0L) return
+        context.resources.openRawResource(resourceId).use { input ->
+            destination.outputStream().use { output -> input.copyTo(output) }
+        }
     }
 
     override fun postInitOptions() {
@@ -824,7 +834,8 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
 
     companion object {
         private const val MPV_FONTS_DIRECTORY = "mpv-fonts"
-        private const val MPV_ARABIC_FONT_FILE = "NotoSansArabic[wght].ttf"
+        private const val MPV_SANS_ARABIC_FONT_FILE = "NotoSansArabic[wght].ttf"
+        private const val MPV_NASKH_ARABIC_FONT_FILE = "NotoNaskhArabic[wght].ttf"
         private const val TAG = "NuvioMpvSurfaceView"
         private const val MPV_VIDEO_OUTPUT_GPU = "gpu"
         private const val MPV_VIDEO_OUTPUT_GPU_NEXT = "gpu-next"
