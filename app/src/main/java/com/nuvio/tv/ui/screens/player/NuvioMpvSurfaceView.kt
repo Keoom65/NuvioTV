@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
+import com.nuvio.tv.R
 import com.nuvio.tv.data.local.MpvHardwareDecodeMode
 import com.nuvio.tv.data.local.AudioOutputChannels
 import com.nuvio.tv.data.local.SubtitleStyleSettings
@@ -39,6 +40,7 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     fun ensureInitialized() {
         if (initialized) return
         Utils.copyAssets(context)
+        ensureMpvFontsDirectory()
         context.filesDir.resolve("mpv.conf").writeText(mpvConfig)
         initialize(
             configDir = context.filesDir.path,
@@ -689,6 +691,7 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
         mpv.setOptionString("sub-ass-override", "no")
         mpv.setOptionString("sub-codepage", "auto:utf-8")
         mpv.setOptionString("sub-font", "Roboto")
+        mpv.setOptionString("sub-fonts-dir", ensureMpvFontsDirectory())
         mpv.setOptionString("sub-use-margins", "yes")
         mpv.setOptionString("sub-ass-force-margins", "yes")
         mpv.setOptionString(
@@ -707,6 +710,21 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
         mpv.setOptionString("keep-open", "yes")
         mpv.setOptionString("softvol", "yes")
         mpv.setOptionString("volume-max", MPV_MAX_VOLUME_PERCENT.toInt().toString())
+    }
+
+    private fun ensureMpvFontsDirectory(): String {
+        val fontsDirectory = context.filesDir.resolve(MPV_FONTS_DIRECTORY)
+        if (!fontsDirectory.exists() && !fontsDirectory.mkdirs()) {
+            error("Unable to create MPV fonts directory: ${fontsDirectory.absolutePath}")
+        }
+
+        val arabicFont = fontsDirectory.resolve(MPV_ARABIC_FONT_FILE)
+        if (!arabicFont.exists() || arabicFont.length() == 0L) {
+            context.resources.openRawResource(R.font.noto_sans_arabic_variable).use { input ->
+                arabicFont.outputStream().use { output -> input.copyTo(output) }
+            }
+        }
+        return fontsDirectory.absolutePath
     }
 
     override fun postInitOptions() {
@@ -805,6 +823,8 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     }
 
     companion object {
+        private const val MPV_FONTS_DIRECTORY = "mpv-fonts"
+        private const val MPV_ARABIC_FONT_FILE = "NotoSansArabic[wght].ttf"
         private const val TAG = "NuvioMpvSurfaceView"
         private const val MPV_VIDEO_OUTPUT_GPU = "gpu"
         private const val MPV_VIDEO_OUTPUT_GPU_NEXT = "gpu-next"
