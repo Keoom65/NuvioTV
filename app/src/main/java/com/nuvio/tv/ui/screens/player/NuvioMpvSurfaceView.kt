@@ -730,6 +730,10 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
             resourceId = R.font.rubik_variable,
             destination = fontsDirectory.resolve(MPV_RUBIK_FONT_FILE)
         )
+        copyBundledFontIfMissing(
+            resourceId = R.font.adobe_arabic_regular,
+            destination = fontsDirectory.resolve(MPV_ADOBE_ARABIC_FONT_FILE)
+        )
         return fontsDirectory.absolutePath
     }
 
@@ -840,6 +844,7 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
         private const val MPV_SANS_ARABIC_FONT_FILE = "NotoSansArabic[wght].ttf"
         private const val MPV_NASKH_ARABIC_FONT_FILE = "NotoNaskhArabic[wght].ttf"
         private const val MPV_RUBIK_FONT_FILE = "Rubik[wght].ttf"
+        private const val MPV_ADOBE_ARABIC_FONT_FILE = "AdobeArabic-Regular.ttf"
         private const val TAG = "NuvioMpvSurfaceView"
         private const val MPV_VIDEO_OUTPUT_GPU = "gpu"
         private const val MPV_VIDEO_OUTPUT_GPU_NEXT = "gpu-next"
