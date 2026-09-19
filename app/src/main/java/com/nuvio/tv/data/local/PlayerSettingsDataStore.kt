@@ -260,7 +260,7 @@ data class PlayerSettings(
     val stripHdr10PlusSei: Boolean = false,
     val mpvHi10pGnextSoftwareFallbackEnabled: Boolean = false,
     val mpvHardwareDecodeMode: MpvHardwareDecodeMode = MpvHardwareDecodeMode.AUTO_SAFE,
-    val mpvConfig: String = "",
+    val mpvConfig: String = DEFAULT_MPV_CONFIG,
     // Display settings
     val frameRateMatchingMode: FrameRateMatchingMode = FrameRateMatchingMode.OFF,
     val resolutionMatchingEnabled: Boolean = false,
@@ -326,6 +326,7 @@ data class PlayerSettings(
         get() = tunnelingEnabled && isTunnelingCompatible
 
     companion object {
+        const val DEFAULT_MPV_CONFIG = "sub-font=Noto Naskh Arabic"
         const val DEFAULT_STILL_WATCHING_EPISODE_THRESHOLD = 3
         const val MIN_STILL_WATCHING_EPISODE_THRESHOLD = 2
         const val MAX_STILL_WATCHING_EPISODE_THRESHOLD = 6
@@ -883,7 +884,7 @@ class PlayerSettingsDataStore @Inject constructor(
                 mpvHi10pGnextSoftwareFallbackEnabled =
                     prefs[mpvHi10pGnextSoftwareFallbackEnabledKey] ?: false,
                 mpvHardwareDecodeMode = parseMpvHardwareDecodeMode(prefs[mpvHardwareDecodeModeKey]),
-                mpvConfig = prefs[mpvConfigKey] ?: "",
+                mpvConfig = prefs[mpvConfigKey] ?: PlayerSettings.DEFAULT_MPV_CONFIG,
                 frameRateMatchingMode = prefs[frameRateMatchingModeKey]?.let {
                     runCatching { FrameRateMatchingMode.valueOf(it) }.getOrNull()
                 } ?: if (prefs[frameRateMatchingKey] == true) FrameRateMatchingMode.START_STOP else FrameRateMatchingMode.OFF,
