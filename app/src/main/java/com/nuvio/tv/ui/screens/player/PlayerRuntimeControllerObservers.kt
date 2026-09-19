@@ -420,8 +420,38 @@ internal fun PlayerRuntimeController.observeSubtitleSettings() {
 
             val previousMpvHardwareDecodeMode = mpvHardwareDecodeModeSetting
             mpvHardwareDecodeModeSetting = settings.mpvHardwareDecodeMode
+            val previousMpvConfig = mpvConfigSetting
+            mpvConfigSetting = settings.mpvConfig
+            if (isUsingMpvEngine() && previousMpvConfig != mpvConfigSetting) {
+                mpvView?.applyMpvConfig(mpvConfigSetting)
+            }
             if (isUsingMpvEngine() && previousMpvHardwareDecodeMode != mpvHardwareDecodeModeSetting) {
                 mpvView?.applyHardwareDecodeMode(mpvHardwareDecodeModeSetting)
+            }
+            val previousMpvDownmixEnabled = mpvDownmixEnabledSetting
+            val previousMpvAudioOutputChannels = mpvAudioOutputChannelsSetting
+            val previousMpvMaintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting
+            val previousMpvCenterMixLevel = mpvCenterMixLevelSetting
+            mpvDownmixEnabledSetting = settings.downmixEnabled
+            mpvAudioOutputChannelsSetting = settings.audioOutputChannels
+            mpvMaintainOriginalAudioOnDownmixSetting = settings.maintainOriginalAudioOnDownmix
+            mpvCenterMixLevelSetting = resolvedCenterMixLevelDb
+            if (
+                isUsingMpvEngine() &&
+                (
+                    previousMpvDownmixEnabled != mpvDownmixEnabledSetting ||
+                        previousMpvAudioOutputChannels != mpvAudioOutputChannelsSetting ||
+                        previousMpvMaintainOriginalAudio != mpvMaintainOriginalAudioOnDownmixSetting ||
+                        previousMpvCenterMixLevel != mpvCenterMixLevelSetting
+                    )
+            ) {
+                mpvView?.applyAudioDownmixSettings(
+                    enabled = mpvDownmixEnabledSetting,
+                    channels = mpvAudioOutputChannelsSetting,
+                    maintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting,
+                    centerMixLevelDb = mpvCenterMixLevelSetting
+                )
+                updateAudioControlAvailability()
             }
 
             val resolvedAudioLanguages = resolvePreferredAudioLanguages(

@@ -32,10 +32,18 @@ val OpenSansFamily = FontFamily(
     Font(R.font.opensans_variable, FontWeight.Bold)
 )
 
+val RubikFamily = FontFamily(
+    Font(R.font.rubik_variable, FontWeight.Normal),
+    Font(R.font.rubik_variable, FontWeight.Medium),
+    Font(R.font.rubik_variable, FontWeight.SemiBold),
+    Font(R.font.rubik_variable, FontWeight.Bold)
+)
+
 fun getFontFamily(appFont: AppFont): FontFamily = when (appFont) {
     AppFont.INTER -> InterFamily
     AppFont.DM_SANS -> DMSansFamily
     AppFont.OPEN_SANS -> OpenSansFamily
+    AppFont.RUBIK -> RubikFamily
 }
 
 @Immutable

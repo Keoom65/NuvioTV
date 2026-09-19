@@ -4,13 +4,17 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
+import com.nuvio.tv.R
 import com.nuvio.tv.data.local.MpvHardwareDecodeMode
+import com.nuvio.tv.data.local.AudioOutputChannels
 import com.nuvio.tv.data.local.SubtitleStyleSettings
 import `is`.xyz.mpv.BaseMPVView
 import `is`.xyz.mpv.Utils
+import java.io.File
 import java.util.Locale
 import kotlin.math.pow
 import kotlin.math.roundToLong
+import kotlin.math.sqrt
 
 class NuvioMpvSurfaceView @JvmOverloads constructor(
     context: Context,
@@ -27,6 +31,7 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     private var hardwareDecodeMode: MpvHardwareDecodeMode = MpvHardwareDecodeMode.AUTO_SAFE
     private var hi10pGnextSoftwareFallbackActive = false
     private var appliedHi10pGnextSoftwareFallback: Boolean? = null
+    private var mpvConfig = ""
     private var currentAspectMode: AspectMode = AspectMode.ORIGINAL
     private var pendingAspectRetryCount = 0
     private val aspectReapplyRunnable = Runnable {
@@ -36,11 +41,23 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     fun ensureInitialized() {
         if (initialized) return
         Utils.copyAssets(context)
+        ensureMpvFontsDirectory()
+        context.filesDir.resolve("mpv.conf").writeText(mpvConfig)
         initialize(
             configDir = context.filesDir.path,
             cacheDir = context.cacheDir.path
         )
         initialized = true
+    }
+
+    fun applyMpvConfig(config: String) {
+        mpvConfig = config
+        val configFile = context.filesDir.resolve("mpv.conf")
+        configFile.writeText(config)
+        if (initialized) {
+            runCatching { mpv.command("load-config", configFile.absolutePath) }
+                .onFailure { Log.w(TAG, "Failed to reload mpv.conf: ${it.message}") }
+        }
     }
 
     fun setMedia(url: String, headers: Map<String, String>, startPositionMs: Long = 0L) {
@@ -277,6 +294,33 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
             mpv.setPropertyString("hwdec", mode.toMpvHwdecValue())
         }.onFailure {
             Log.w(TAG, "Failed to apply mpv hardware decode mode ($mode): ${it.message}")
+        }
+    }
+
+    fun applyAudioDownmixSettings(
+        enabled: Boolean,
+        channels: AudioOutputChannels,
+        maintainOriginalAudio: Boolean,
+        centerMixLevelDb: Int
+    ) {
+        if (!initialized) return
+        runCatching {
+            mpv.setPropertyString(
+                "audio-channels",
+                if (enabled) channels.ffmpegLayoutName else "auto"
+            )
+            mpv.setPropertyString(
+                "audio-normalize-downmix",
+                if (enabled && !maintainOriginalAudio) "yes" else "no"
+            )
+            val centerMixLevel = (sqrt(0.5) * 10.0.pow(centerMixLevelDb.coerceIn(-10, 30) / 20.0))
+                .coerceIn(0.0, 1.0)
+            mpv.setPropertyString(
+                "audio-swresample-o",
+                "center_mix_level=$centerMixLevel"
+            )
+        }.onFailure {
+            Log.w(TAG, "Failed to apply mpv audio downmix settings: ${it.message}")
         }
     }
 
@@ -647,7 +691,7 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
         // Preserve native ASS/SSA styling behavior on MPV.
         mpv.setOptionString("sub-ass-override", "no")
         mpv.setOptionString("sub-codepage", "auto:utf-8")
-        mpv.setOptionString("sub-font", "Roboto")
+        mpv.setOptionString("sub-fonts-dir", ensureMpvFontsDirectory())
         mpv.setOptionString("sub-use-margins", "yes")
         mpv.setOptionString("sub-ass-force-margins", "yes")
         mpv.setOptionString(
@@ -666,6 +710,38 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
         mpv.setOptionString("keep-open", "yes")
         mpv.setOptionString("softvol", "yes")
         mpv.setOptionString("volume-max", MPV_MAX_VOLUME_PERCENT.toInt().toString())
+    }
+
+    private fun ensureMpvFontsDirectory(): String {
+        val fontsDirectory = context.filesDir.resolve(MPV_FONTS_DIRECTORY)
+        if (!fontsDirectory.exists() && !fontsDirectory.mkdirs()) {
+            error("Unable to create MPV fonts directory: ${fontsDirectory.absolutePath}")
+        }
+
+        copyBundledFontIfMissing(
+            resourceId = R.font.noto_sans_arabic_variable,
+            destination = fontsDirectory.resolve(MPV_SANS_ARABIC_FONT_FILE)
+        )
+        copyBundledFontIfMissing(
+            resourceId = R.font.noto_naskh_arabic_variable,
+            destination = fontsDirectory.resolve(MPV_NASKH_ARABIC_FONT_FILE)
+        )
+        copyBundledFontIfMissing(
+            resourceId = R.font.rubik_variable,
+            destination = fontsDirectory.resolve(MPV_RUBIK_FONT_FILE)
+        )
+        copyBundledFontIfMissing(
+            resourceId = R.font.adobe_arabic_regular,
+            destination = fontsDirectory.resolve(MPV_ADOBE_ARABIC_FONT_FILE)
+        )
+        return fontsDirectory.absolutePath
+    }
+
+    private fun copyBundledFontIfMissing(resourceId: Int, destination: File) {
+        if (destination.exists() && destination.length() > 0L) return
+        context.resources.openRawResource(resourceId).use { input ->
+            destination.outputStream().use { output -> input.copyTo(output) }
+        }
     }
 
     override fun postInitOptions() {
@@ -764,6 +840,11 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     }
 
     companion object {
+        private const val MPV_FONTS_DIRECTORY = "mpv-fonts"
+        private const val MPV_SANS_ARABIC_FONT_FILE = "NotoSansArabic[wght].ttf"
+        private const val MPV_NASKH_ARABIC_FONT_FILE = "NotoNaskhArabic[wght].ttf"
+        private const val MPV_RUBIK_FONT_FILE = "Rubik[wght].ttf"
+        private const val MPV_ADOBE_ARABIC_FONT_FILE = "AdobeArabic-Regular.ttf"
         private const val TAG = "NuvioMpvSurfaceView"
         private const val MPV_VIDEO_OUTPUT_GPU = "gpu"
         private const val MPV_VIDEO_OUTPUT_GPU_NEXT = "gpu-next"

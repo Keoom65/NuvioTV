@@ -1,0 +1,5 @@
+Adobe Arabic font supplied by the project contributor under a license permitting
+bundling and redistribution with NuvioTV.
+
+Font family: Adobe Arabic
+Style: Regular

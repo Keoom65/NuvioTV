@@ -100,6 +100,15 @@ internal fun PlayerRuntimeController.applyAudioAmplification(db: Int) {
 internal fun PlayerRuntimeController.applyCenterMixLevel(db: Int) {
     val clampedDb = db.coerceIn(CENTER_MIX_LEVEL_MIN_DB, CENTER_MIX_LEVEL_MAX_DB)
     ffmpegAudioRenderer?.setCenterMixLevelDb(clampedDb)
+    mpvCenterMixLevelSetting = clampedDb
+    if (isUsingMpvEngine()) {
+        mpvView?.applyAudioDownmixSettings(
+            enabled = mpvDownmixEnabledSetting,
+            channels = mpvAudioOutputChannelsSetting,
+            maintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting,
+            centerMixLevelDb = clampedDb
+        )
+    }
     _uiState.update { state ->
         state.copy(centerMixLevelDb = clampedDb)
     }
@@ -111,8 +120,13 @@ internal fun PlayerRuntimeController.updateAudioControlAvailability(
 ) {
     val selectedTrack = audioTracks.getOrNull(selectedAudioIndex)
     val isAudioAmplificationAvailable = isUsingMpvEngine() || _exoPlayer != null
-    val isCenterMixAvailable =
+    val isCenterMixAvailable = if (isUsingMpvEngine()) {
+        // MPV may not expose demux-channel-count for the selected track. The
+        // downmix option itself is the reliable availability signal.
+        mpvDownmixEnabledSetting
+    } else {
         ffmpegAudioRenderer?.isCenterMixActive() == true && (selectedTrack?.channelCount ?: 0) > 2
+    }
     val clampedDb = _uiState.value.audioAmplificationDb
         .coerceIn(AUDIO_AMPLIFICATION_MIN_DB, AUDIO_AMPLIFICATION_MAX_DB)
     gainAudioProcessor.setGainDb(

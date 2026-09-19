@@ -24,6 +24,7 @@ import com.nuvio.tv.core.tracking.TrackingMediaReference
 import com.nuvio.tv.core.tracking.TrackingScrobbleCoordinator
 import com.nuvio.tv.core.torrent.TorrentService
 import com.nuvio.tv.data.local.AutoSkipSegmentType
+import com.nuvio.tv.data.local.AudioOutputChannels
 import com.nuvio.tv.data.local.InternalPlayerEngine
 import com.nuvio.tv.data.local.MpvHardwareDecodeMode
 import com.nuvio.tv.data.local.NextEpisodeThresholdMode
@@ -476,6 +477,11 @@ class PlayerRuntimeController(
         PlayerSettings.DEFAULT_STILL_WATCHING_EPISODE_THRESHOLD
     internal var mpvHi10pGnextSoftwareFallbackEnabledSetting: Boolean = false
     internal var mpvHardwareDecodeModeSetting: MpvHardwareDecodeMode = MpvHardwareDecodeMode.AUTO_SAFE
+    internal var mpvDownmixEnabledSetting: Boolean = false
+    internal var mpvAudioOutputChannelsSetting: AudioOutputChannels = AudioOutputChannels.default
+    internal var mpvMaintainOriginalAudioOnDownmixSetting: Boolean = true
+    internal var mpvCenterMixLevelSetting: Int = 0
+    internal var mpvConfigSetting: String = ""
     internal var mpvPreferredAudioLanguages: List<String> = emptyList()
     internal var currentStreamBingeGroup: String? = navigationArgs.bingeGroup
     internal var hasAppliedRememberedAudioSelection: Boolean = false
