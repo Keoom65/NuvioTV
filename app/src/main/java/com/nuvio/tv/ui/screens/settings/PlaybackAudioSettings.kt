@@ -85,6 +85,7 @@ internal fun LazyListScope.trailerAndAudioSettingsItems(
     onSetDv7ToDv81PreserveMappingEnabled: (Boolean) -> Unit,
     onSetStripHdr10PlusSei: (Boolean) -> Unit,
     onSetMpvHi10pGnextSoftwareFallbackEnabled: (Boolean) -> Unit,
+    onSetMpvConfig: (String) -> Unit,
     onItemFocused: () -> Unit = {},
     enabled: Boolean = true,
     videoExtraItems: (LazyListScope.() -> Unit)? = null
@@ -513,6 +514,7 @@ internal fun AudioSettingsDialogs(
             onDismiss = onDismissDv7HandlingModeDialog
         )
     }
+}
 
 @Composable
 private fun MpvConfigDialog(
