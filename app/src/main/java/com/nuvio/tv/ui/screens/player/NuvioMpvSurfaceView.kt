@@ -28,6 +28,7 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     private var hardwareDecodeMode: MpvHardwareDecodeMode = MpvHardwareDecodeMode.AUTO_SAFE
     private var hi10pGnextSoftwareFallbackActive = false
     private var appliedHi10pGnextSoftwareFallback: Boolean? = null
+    private var mpvConfig = ""
     private var currentAspectMode: AspectMode = AspectMode.ORIGINAL
     private var pendingAspectRetryCount = 0
     private val aspectReapplyRunnable = Runnable {
@@ -37,11 +38,22 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     fun ensureInitialized() {
         if (initialized) return
         Utils.copyAssets(context)
+        context.filesDir.resolve("mpv.conf").writeText(mpvConfig)
         initialize(
             configDir = context.filesDir.path,
             cacheDir = context.cacheDir.path
         )
         initialized = true
+    }
+
+    fun applyMpvConfig(config: String) {
+        mpvConfig = config
+        val configFile = context.filesDir.resolve("mpv.conf")
+        configFile.writeText(config)
+        if (initialized) {
+            runCatching { mpv.command("load-config", configFile.absolutePath) }
+                .onFailure { Log.w(TAG, "Failed to reload mpv.conf: ${it.message}") }
+        }
     }
 
     fun setMedia(url: String, headers: Map<String, String>, startPositionMs: Long = 0L) {
