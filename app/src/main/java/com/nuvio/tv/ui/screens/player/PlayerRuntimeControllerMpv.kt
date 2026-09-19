@@ -29,7 +29,8 @@ internal fun PlayerRuntimeController.attachMpvView(view: NuvioMpvSurfaceView?) {
         view.applyAudioDownmixSettings(
             enabled = mpvDownmixEnabledSetting,
             channels = mpvAudioOutputChannelsSetting,
-            maintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting
+            maintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting,
+            centerMixLevelDb = mpvCenterMixLevelSetting
         )
         view.setMedia(currentStreamUrl, currentHeaders)
         view.setPlaybackSpeed(_uiState.value.playbackSpeed)

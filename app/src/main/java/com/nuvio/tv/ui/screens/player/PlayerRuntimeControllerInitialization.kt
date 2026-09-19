@@ -222,6 +222,7 @@ internal fun PlayerRuntimeController.initializePlayer(
             mpvDownmixEnabledSetting = playerSettings.downmixEnabled
             mpvAudioOutputChannelsSetting = playerSettings.audioOutputChannels
             mpvMaintainOriginalAudioOnDownmixSetting = playerSettings.maintainOriginalAudioOnDownmix
+            mpvCenterMixLevelSetting = playerSettings.centerMixLevelDb
             mpvConfigSetting = playerSettings.mpvConfig
             var effectiveInternalPlayerEngine = overrideInternalPlayerEngine ?: playerSettings.internalPlayerEngine
             if (effectiveInternalPlayerEngine == InternalPlayerEngine.AUTO) {

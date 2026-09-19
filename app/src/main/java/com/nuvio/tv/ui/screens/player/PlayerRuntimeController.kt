@@ -480,6 +480,7 @@ class PlayerRuntimeController(
     internal var mpvDownmixEnabledSetting: Boolean = false
     internal var mpvAudioOutputChannelsSetting: AudioOutputChannels = AudioOutputChannels.default
     internal var mpvMaintainOriginalAudioOnDownmixSetting: Boolean = true
+    internal var mpvCenterMixLevelSetting: Int = 0
     internal var mpvConfigSetting: String = ""
     internal var mpvPreferredAudioLanguages: List<String> = emptyList()
     internal var currentStreamBingeGroup: String? = navigationArgs.bingeGroup

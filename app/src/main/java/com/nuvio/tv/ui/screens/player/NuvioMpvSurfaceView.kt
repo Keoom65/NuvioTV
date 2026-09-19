@@ -12,6 +12,7 @@ import `is`.xyz.mpv.Utils
 import java.util.Locale
 import kotlin.math.pow
 import kotlin.math.roundToLong
+import kotlin.math.sqrt
 
 class NuvioMpvSurfaceView @JvmOverloads constructor(
     context: Context,
@@ -296,7 +297,8 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     fun applyAudioDownmixSettings(
         enabled: Boolean,
         channels: AudioOutputChannels,
-        maintainOriginalAudio: Boolean
+        maintainOriginalAudio: Boolean,
+        centerMixLevelDb: Int
     ) {
         if (!initialized) return
         runCatching {
@@ -307,6 +309,12 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
             mpv.setPropertyString(
                 "audio-normalize-downmix",
                 if (enabled && !maintainOriginalAudio) "yes" else "no"
+            )
+            val centerMixLevel = (sqrt(0.5) * 10.0.pow(centerMixLevelDb.coerceIn(-10, 30) / 20.0))
+                .coerceIn(0.0, 1.0)
+            mpv.setPropertyString(
+                "audio-swresample-o",
+                "center_mix_level=$centerMixLevel"
             )
         }.onFailure {
             Log.w(TAG, "Failed to apply mpv audio downmix settings: ${it.message}")
