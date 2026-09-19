@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
 import com.nuvio.tv.data.local.MpvHardwareDecodeMode
+import com.nuvio.tv.data.local.AudioOutputChannels
 import com.nuvio.tv.data.local.SubtitleStyleSettings
 import `is`.xyz.mpv.BaseMPVView
 import `is`.xyz.mpv.Utils
@@ -277,6 +278,26 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
             mpv.setPropertyString("hwdec", mode.toMpvHwdecValue())
         }.onFailure {
             Log.w(TAG, "Failed to apply mpv hardware decode mode ($mode): ${it.message}")
+        }
+    }
+
+    fun applyAudioDownmixSettings(
+        enabled: Boolean,
+        channels: AudioOutputChannels,
+        maintainOriginalAudio: Boolean
+    ) {
+        if (!initialized) return
+        runCatching {
+            mpv.setPropertyString(
+                "audio-channels",
+                if (enabled) channels.ffmpegLayoutName else "auto"
+            )
+            mpv.setPropertyString(
+                "audio-normalize-downmix",
+                if (enabled && !maintainOriginalAudio) "yes" else "no"
+            )
+        }.onFailure {
+            Log.w(TAG, "Failed to apply mpv audio downmix settings: ${it.message}")
         }
     }
 

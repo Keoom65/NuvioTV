@@ -423,6 +423,26 @@ internal fun PlayerRuntimeController.observeSubtitleSettings() {
             if (isUsingMpvEngine() && previousMpvHardwareDecodeMode != mpvHardwareDecodeModeSetting) {
                 mpvView?.applyHardwareDecodeMode(mpvHardwareDecodeModeSetting)
             }
+            val previousMpvDownmixEnabled = mpvDownmixEnabledSetting
+            val previousMpvAudioOutputChannels = mpvAudioOutputChannelsSetting
+            val previousMpvMaintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting
+            mpvDownmixEnabledSetting = settings.downmixEnabled
+            mpvAudioOutputChannelsSetting = settings.audioOutputChannels
+            mpvMaintainOriginalAudioOnDownmixSetting = settings.maintainOriginalAudioOnDownmix
+            if (
+                isUsingMpvEngine() &&
+                (
+                    previousMpvDownmixEnabled != mpvDownmixEnabledSetting ||
+                        previousMpvAudioOutputChannels != mpvAudioOutputChannelsSetting ||
+                        previousMpvMaintainOriginalAudio != mpvMaintainOriginalAudioOnDownmixSetting
+                    )
+            ) {
+                mpvView?.applyAudioDownmixSettings(
+                    enabled = mpvDownmixEnabledSetting,
+                    channels = mpvAudioOutputChannelsSetting,
+                    maintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting
+                )
+            }
 
             val resolvedAudioLanguages = resolvePreferredAudioLanguages(
                 preferredAudioLanguage = settings.preferredAudioLanguage,

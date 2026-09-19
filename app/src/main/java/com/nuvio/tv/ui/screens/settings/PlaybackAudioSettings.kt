@@ -172,111 +172,107 @@ internal fun LazyListScope.trailerAndAudioSettingsItems(
         )
     }
 
-    if (isExoEngine) {
-        item(key = "audio_advanced_header") {
-            Spacer(modifier = Modifier.height(NuvioTheme.spacing.lg))
-            Text(
-                text = stringResource(R.string.audio_advanced_section),
-                style = MaterialTheme.typography.titleMedium,
-                color = NuvioTheme.colors.TextSecondary,
-                modifier = Modifier.padding(vertical = NuvioTheme.spacing.sm)
-            )
+    item(key = "audio_advanced_header") {
+        Spacer(modifier = Modifier.height(NuvioTheme.spacing.lg))
+        Text(
+            text = stringResource(R.string.audio_advanced_section),
+            style = MaterialTheme.typography.titleMedium,
+            color = NuvioTheme.colors.TextSecondary,
+            modifier = Modifier.padding(vertical = NuvioTheme.spacing.sm)
+        )
+    }
+
+    item(key = "audio_advanced_warning") {
+        Text(
+            text = stringResource(R.string.audio_advanced_warning),
+            style = MaterialTheme.typography.bodySmall,
+            color = Color(0xFFFF9800),
+            modifier = Modifier.padding(bottom = NuvioTheme.spacing.sm)
+        )
+    }
+
+    item(key = "audio_decoder_priority") {
+        val decoderName = when (playerSettings.decoderPriority) {
+            0 -> stringResource(R.string.audio_decoder_device_only)
+            1 -> stringResource(R.string.audio_decoder_prefer_device)
+            2 -> stringResource(R.string.audio_decoder_prefer_app)
+            else -> stringResource(R.string.audio_decoder_prefer_device)
         }
 
-        item(key = "audio_advanced_warning") {
-            Text(
-                text = stringResource(R.string.audio_advanced_warning),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFFFF9800),
-                modifier = Modifier.padding(bottom = NuvioTheme.spacing.sm)
-            )
-        }
+        NavigationSettingsItem(
+            icon = Icons.Default.Tune,
+            title = stringResource(R.string.audio_decoder_priority),
+            subtitle = decoderName,
+            onClick = onShowDecoderPriorityDialog,
+            onFocused = onItemFocused,
+            enabled = enabled
+        )
+    }
 
-        item(key = "audio_decoder_priority") {
-            val decoderName = when (playerSettings.decoderPriority) {
-                0 -> stringResource(R.string.audio_decoder_device_only)
-                1 -> stringResource(R.string.audio_decoder_prefer_device)
-                2 -> stringResource(R.string.audio_decoder_prefer_app)
-                else -> stringResource(R.string.audio_decoder_prefer_device)
-            }
+    item(key = "audio_enable_downmix") {
+        ToggleSettingsItem(
+            icon = Icons.Default.Tune,
+            title = stringResource(R.string.audio_enable_downmix_title),
+            subtitle = stringResource(R.string.audio_enable_downmix_subtitle),
+            isChecked = playerSettings.downmixEnabled,
+            onCheckedChange = onSetDownmixEnabled,
+            onFocused = onItemFocused,
+            enabled = enabled
+        )
+    }
 
+    if (playerSettings.downmixEnabled) {
+        item(key = "audio_number_of_channels") {
             NavigationSettingsItem(
-                icon = Icons.Default.Tune,
-                title = stringResource(R.string.audio_decoder_priority),
-                subtitle = decoderName,
-                onClick = onShowDecoderPriorityDialog,
+                icon = Icons.Default.VolumeUp,
+                title = stringResource(R.string.audio_number_of_channels),
+                subtitle = playerSettings.audioOutputChannels.displayLabel,
+                onClick = onShowAudioOutputChannelsDialog,
                 onFocused = onItemFocused,
                 enabled = enabled
             )
         }
 
-        item(key = "audio_enable_downmix") {
+        item(key = "audio_downmix_normalization") {
             ToggleSettingsItem(
                 icon = Icons.Default.Tune,
-                title = stringResource(R.string.audio_enable_downmix_title),
-                subtitle = stringResource(R.string.audio_enable_downmix_subtitle),
-                // Show off outside Prefer app decoders so a persisted value doesn't
-                // read as active (same pattern as optical passthrough / DV8.1-only toggles).
-                isChecked = playerSettings.effectiveDownmixEnabled,
-                onCheckedChange = onSetDownmixEnabled,
+                title = stringResource(R.string.audio_maintain_original_audio_on_downmix_title),
+                subtitle = stringResource(R.string.audio_maintain_original_audio_on_downmix_subtitle),
+                isChecked = playerSettings.maintainOriginalAudioOnDownmix,
+                onCheckedChange = onSetMaintainOriginalAudioOnDownmix,
                 onFocused = onItemFocused,
-                enabled = enabled && playerSettings.isPreferAppDecoder
+                enabled = enabled
             )
         }
+    }
 
-        if (playerSettings.effectiveDownmixEnabled) {
-            item(key = "audio_number_of_channels") {
-                NavigationSettingsItem(
-                    icon = Icons.Default.VolumeUp,
-                    title = stringResource(R.string.audio_number_of_channels),
-                    subtitle = playerSettings.audioOutputChannels.displayLabel,
-                    onClick = onShowAudioOutputChannelsDialog,
-                    onFocused = onItemFocused,
-                    enabled = enabled
-                )
-            }
+    item(key = "audio_tunneled_playback") {
+        ToggleSettingsItem(
+            icon = Icons.Default.VolumeUp,
+            title = stringResource(R.string.audio_tunneled),
+            subtitle = stringResource(R.string.audio_tunneled_sub),
+            // Show off when prefer-app decoder is active so a persisted value
+            // doesn't read as active (same pattern as optical passthrough /
+            // DV8.1-only toggles). Tunneling is incompatible with the
+            // prefer-app decoder path.
+            isChecked = playerSettings.effectiveTunnelingEnabled,
+            onCheckedChange = onSetTunnelingEnabled,
+            onFocused = onItemFocused,
+            enabled = enabled && playerSettings.isTunnelingCompatible
+        )
+    }
 
-            item(key = "audio_downmix_normalization") {
-                ToggleSettingsItem(
-                    icon = Icons.Default.Tune,
-                    title = stringResource(R.string.audio_maintain_original_audio_on_downmix_title),
-                    subtitle = stringResource(R.string.audio_maintain_original_audio_on_downmix_subtitle),
-                    isChecked = playerSettings.maintainOriginalAudioOnDownmix,
-                    onCheckedChange = onSetMaintainOriginalAudioOnDownmix,
-                    onFocused = onItemFocused,
-                    enabled = enabled
-                )
-            }
-        }
-
-        item(key = "audio_tunneled_playback") {
+    if (isExoEngine || isMpvEngine) {
+        item(key = "audio_force_optical_passthrough") {
             ToggleSettingsItem(
                 icon = Icons.Default.VolumeUp,
-                title = stringResource(R.string.audio_tunneled),
-                subtitle = stringResource(R.string.audio_tunneled_sub),
-                // Show off when prefer-app decoder is active so a persisted value
-                // doesn't read as active (same pattern as optical passthrough /
-                // DV8.1-only toggles). Downmix also requires prefer-app, so this
-                // covers that path too.
-                isChecked = playerSettings.effectiveTunnelingEnabled,
-                onCheckedChange = onSetTunnelingEnabled,
+                title = stringResource(R.string.audio_force_optical_passthrough),
+                subtitle = stringResource(R.string.audio_force_optical_passthrough_sub),
+                isChecked = playerSettings.forceOpticalPassthrough && playerSettings.decoderPriority != 0,
+                onCheckedChange = onSetForceOpticalPassthrough,
                 onFocused = onItemFocused,
-                enabled = enabled && playerSettings.isTunnelingCompatible
+                enabled = enabled && playerSettings.decoderPriority != 0
             )
-        }
-
-        if (isExoEngine || isMpvEngine) {
-            item(key = "audio_force_optical_passthrough") {
-                ToggleSettingsItem(
-                    icon = Icons.Default.VolumeUp,
-                    title = stringResource(R.string.audio_force_optical_passthrough),
-                    subtitle = stringResource(R.string.audio_force_optical_passthrough_sub),
-                    isChecked = playerSettings.forceOpticalPassthrough && playerSettings.decoderPriority != 0,
-                    onCheckedChange = onSetForceOpticalPassthrough,
-                    onFocused = onItemFocused,
-                    enabled = enabled && playerSettings.decoderPriority != 0
-                )
-            }
         }
     }
 

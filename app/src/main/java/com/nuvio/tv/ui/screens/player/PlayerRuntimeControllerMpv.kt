@@ -25,6 +25,11 @@ internal fun PlayerRuntimeController.attachMpvView(view: NuvioMpvSurfaceView?) {
         performPendingMpvHardRestartIfNeeded(view)
         view.applyHi10pGnextSoftwareFallback(shouldUseMpvHi10pGnextSoftwareFallback())
         view.applyHardwareDecodeMode(mpvHardwareDecodeModeSetting)
+        view.applyAudioDownmixSettings(
+            enabled = mpvDownmixEnabledSetting,
+            channels = mpvAudioOutputChannelsSetting,
+            maintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting
+        )
         view.setMedia(currentStreamUrl, currentHeaders)
         view.setPlaybackSpeed(_uiState.value.playbackSpeed)
         view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb)
