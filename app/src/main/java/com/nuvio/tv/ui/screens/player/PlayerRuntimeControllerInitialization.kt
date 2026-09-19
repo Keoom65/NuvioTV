@@ -219,6 +219,10 @@ internal fun PlayerRuntimeController.initializePlayer(
             mpvHi10pGnextSoftwareFallbackEnabledSetting =
                 playerSettings.mpvHi10pGnextSoftwareFallbackEnabled
             mpvHardwareDecodeModeSetting = playerSettings.mpvHardwareDecodeMode
+            mpvDownmixEnabledSetting = playerSettings.downmixEnabled
+            mpvAudioOutputChannelsSetting = playerSettings.audioOutputChannels
+            mpvMaintainOriginalAudioOnDownmixSetting = playerSettings.maintainOriginalAudioOnDownmix
+            mpvConfigSetting = playerSettings.mpvConfig
             var effectiveInternalPlayerEngine = overrideInternalPlayerEngine ?: playerSettings.internalPlayerEngine
             if (effectiveInternalPlayerEngine == InternalPlayerEngine.AUTO) {
                 effectiveInternalPlayerEngine = resolveAutoInternalPlayerEngine()

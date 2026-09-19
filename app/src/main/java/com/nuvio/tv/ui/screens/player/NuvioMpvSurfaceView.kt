@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
 import com.nuvio.tv.data.local.MpvHardwareDecodeMode
+import com.nuvio.tv.data.local.AudioOutputChannels
 import com.nuvio.tv.data.local.SubtitleStyleSettings
 import `is`.xyz.mpv.BaseMPVView
 import `is`.xyz.mpv.Utils
@@ -27,6 +28,7 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     private var hardwareDecodeMode: MpvHardwareDecodeMode = MpvHardwareDecodeMode.AUTO_SAFE
     private var hi10pGnextSoftwareFallbackActive = false
     private var appliedHi10pGnextSoftwareFallback: Boolean? = null
+    private var mpvConfig = ""
     private var currentAspectMode: AspectMode = AspectMode.ORIGINAL
     private var pendingAspectRetryCount = 0
     private val aspectReapplyRunnable = Runnable {
@@ -36,11 +38,22 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
     fun ensureInitialized() {
         if (initialized) return
         Utils.copyAssets(context)
+        context.filesDir.resolve("mpv.conf").writeText(mpvConfig)
         initialize(
             configDir = context.filesDir.path,
             cacheDir = context.cacheDir.path
         )
         initialized = true
+    }
+
+    fun applyMpvConfig(config: String) {
+        mpvConfig = config
+        val configFile = context.filesDir.resolve("mpv.conf")
+        configFile.writeText(config)
+        if (initialized) {
+            runCatching { mpv.command("load-config", configFile.absolutePath) }
+                .onFailure { Log.w(TAG, "Failed to reload mpv.conf: ${it.message}") }
+        }
     }
 
     fun setMedia(url: String, headers: Map<String, String>, startPositionMs: Long = 0L) {
@@ -277,6 +290,26 @@ class NuvioMpvSurfaceView @JvmOverloads constructor(
             mpv.setPropertyString("hwdec", mode.toMpvHwdecValue())
         }.onFailure {
             Log.w(TAG, "Failed to apply mpv hardware decode mode ($mode): ${it.message}")
+        }
+    }
+
+    fun applyAudioDownmixSettings(
+        enabled: Boolean,
+        channels: AudioOutputChannels,
+        maintainOriginalAudio: Boolean
+    ) {
+        if (!initialized) return
+        runCatching {
+            mpv.setPropertyString(
+                "audio-channels",
+                if (enabled) channels.ffmpegLayoutName else "auto"
+            )
+            mpv.setPropertyString(
+                "audio-normalize-downmix",
+                if (enabled && !maintainOriginalAudio) "yes" else "no"
+            )
+        }.onFailure {
+            Log.w(TAG, "Failed to apply mpv audio downmix settings: ${it.message}")
         }
     }
 

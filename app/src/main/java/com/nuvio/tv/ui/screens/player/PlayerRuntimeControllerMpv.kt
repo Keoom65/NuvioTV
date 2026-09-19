@@ -23,8 +23,14 @@ internal fun PlayerRuntimeController.attachMpvView(view: NuvioMpvSurfaceView?) {
 
     runCatching {
         performPendingMpvHardRestartIfNeeded(view)
+        view.applyMpvConfig(mpvConfigSetting)
         view.applyHi10pGnextSoftwareFallback(shouldUseMpvHi10pGnextSoftwareFallback())
         view.applyHardwareDecodeMode(mpvHardwareDecodeModeSetting)
+        view.applyAudioDownmixSettings(
+            enabled = mpvDownmixEnabledSetting,
+            channels = mpvAudioOutputChannelsSetting,
+            maintainOriginalAudio = mpvMaintainOriginalAudioOnDownmixSetting
+        )
         view.setMedia(currentStreamUrl, currentHeaders)
         view.setPlaybackSpeed(_uiState.value.playbackSpeed)
         view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb)
@@ -120,6 +126,7 @@ internal fun PlayerRuntimeController.initializeMpvPlayer(
             showOverlay = true
         )
         performPendingMpvHardRestartIfNeeded(view)
+        view.applyMpvConfig(mpvConfigSetting)
         view.applyHi10pGnextSoftwareFallback(shouldUseMpvHi10pGnextSoftwareFallback())
         view.applyHardwareDecodeMode(mpvHardwareDecodeModeSetting)
         val initialResumePosition = resolvePendingInitialResumePosition()

@@ -260,6 +260,7 @@ data class PlayerSettings(
     val stripHdr10PlusSei: Boolean = false,
     val mpvHi10pGnextSoftwareFallbackEnabled: Boolean = false,
     val mpvHardwareDecodeMode: MpvHardwareDecodeMode = MpvHardwareDecodeMode.AUTO_SAFE,
+    val mpvConfig: String = "",
     // Display settings
     val frameRateMatchingMode: FrameRateMatchingMode = FrameRateMatchingMode.OFF,
     val resolutionMatchingEnabled: Boolean = false,
@@ -527,6 +528,7 @@ class PlayerSettingsDataStore @Inject constructor(
     private val mpvHi10pGnextSoftwareFallbackEnabledKey =
         booleanPreferencesKey("mpv_hi10p_gnext_software_fallback_enabled")
     private val mpvHardwareDecodeModeKey = stringPreferencesKey("mpv_hardware_decode_mode")
+    private val mpvConfigKey = stringPreferencesKey("mpv_config")
     private val frameRateMatchingKey = booleanPreferencesKey("frame_rate_matching")
     private val frameRateMatchingModeKey = stringPreferencesKey("frame_rate_matching_mode")
     private val resolutionMatchingEnabledKey = booleanPreferencesKey("resolution_matching_enabled")
@@ -881,6 +883,7 @@ class PlayerSettingsDataStore @Inject constructor(
                 mpvHi10pGnextSoftwareFallbackEnabled =
                     prefs[mpvHi10pGnextSoftwareFallbackEnabledKey] ?: false,
                 mpvHardwareDecodeMode = parseMpvHardwareDecodeMode(prefs[mpvHardwareDecodeModeKey]),
+                mpvConfig = prefs[mpvConfigKey] ?: "",
                 frameRateMatchingMode = prefs[frameRateMatchingModeKey]?.let {
                     runCatching { FrameRateMatchingMode.valueOf(it) }.getOrNull()
                 } ?: if (prefs[frameRateMatchingKey] == true) FrameRateMatchingMode.START_STOP else FrameRateMatchingMode.OFF,
@@ -1485,6 +1488,12 @@ class PlayerSettingsDataStore @Inject constructor(
     suspend fun setMpvHi10pGnextSoftwareFallbackEnabled(enabled: Boolean) {
         store().edit { prefs ->
             prefs[mpvHi10pGnextSoftwareFallbackEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setMpvConfig(config: String) {
+        store().edit { prefs ->
+            prefs[mpvConfigKey] = config
         }
     }
 
