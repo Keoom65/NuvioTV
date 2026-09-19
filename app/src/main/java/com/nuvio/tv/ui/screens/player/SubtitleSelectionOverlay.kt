@@ -605,7 +605,6 @@ internal fun SubtitleSelectionOverlay(
                             persistedStyleFocusKey = it
                         },
                         onEvent = onEvent,
-                        isUsingMpv = isUsingMpv,
                         isStyleDisabledByLibass = isStyleDisabledByLibass
                     )
                 }
@@ -816,7 +815,6 @@ private fun SubtitleStyleRail(
     focusRequesters: Map<String, FocusRequester>,
     onStyleFocused: (String) -> Unit,
     onEvent: (PlayerEvent) -> Unit,
-    isUsingMpv: Boolean = false,
     isStyleDisabledByLibass: Boolean = false
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -907,22 +905,6 @@ private fun SubtitleStyleRail(
                         incrementFocusKey = StyleFocusKey.FontSizeIncrease,
                         onFocusChanged = onStyleFocused
                     )
-                }
-            }
-            if (!isUsingMpv) {
-                item {
-                    OverlaySectionCard(
-                        title = stringResource(R.string.subtitle_style_line_spacing),
-                        modifier = styleCardModifier
-                    ) {
-                        StepperRow(
-                            value = "${subtitleStyle.lineSpacing}%",
-                            onDecrease = { dispatchStyleEvent(PlayerEvent.OnSetSubtitleLineSpacing(subtitleStyle.lineSpacing - 10)) },
-                            onIncrease = { dispatchStyleEvent(PlayerEvent.OnSetSubtitleLineSpacing(subtitleStyle.lineSpacing + 10)) },
-                            onMoveLeft = onMoveLeft,
-                            onFocusChanged = onStyleFocused
-                        )
-                    }
                 }
             }
             item {
