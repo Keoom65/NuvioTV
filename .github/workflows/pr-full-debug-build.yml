@@ -72,8 +72,9 @@ jobs:
       - name: Upload fullDebug APK
         uses: actions/upload-artifact@v4
         with:
-          name: nuvio-full-debug-x86-pr-${{ github.event.pull_request.number || github.run_number }}
+          name: nuvio-full-debug-armv7a-pr-${{ github.event.pull_request.number || github.run_number }}
           path: |
+            app/build/outputs/apk/full/debug/app-full-armeabi-v7a-debug.apk
             app/build/outputs/apk/full/debug/app-full-x86-debug.apk
             app/build/outputs/apk/full/debug/app-full-x86_64-debug.apk
           if-no-files-found: error
