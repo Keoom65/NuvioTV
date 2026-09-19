@@ -118,11 +118,11 @@ internal fun PlayerRuntimeController.updateAudioControlAvailability(
     audioTracks: List<TrackInfo> = _uiState.value.audioTracks,
     selectedAudioIndex: Int = _uiState.value.selectedAudioTrackIndex
 ) {
-    val selectedTrack = audioTracks.getOrNull(selectedAudioIndex)
     val isAudioAmplificationAvailable = isUsingMpvEngine() || _exoPlayer != null
     val isCenterMixAvailable = if (isUsingMpvEngine()) {
-        mpvDownmixEnabledSetting &&
-            (selectedTrack?.channelCount ?: 0) > mpvAudioOutputChannelsSetting.channelCount
+        // MPV may not expose demux-channel-count for the selected track. The
+        // downmix option itself is the reliable availability signal.
+        mpvDownmixEnabledSetting
     } else {
         ffmpegAudioRenderer?.isCenterMixActive() == true && (selectedTrack?.channelCount ?: 0) > 2
     }
