@@ -1962,7 +1962,7 @@ private fun PlayerView.applySubtitleStyleIfNeeded(
     }
 }
 
-private fun List<androidx.media3.common.text.Cue>.withSubtitleLineSpacing(
+internal fun List<androidx.media3.common.text.Cue>.withSubtitleLineSpacing(
     lineSpacing: Int
 ): List<androidx.media3.common.text.Cue> {
     if (lineSpacing == 100) return this
