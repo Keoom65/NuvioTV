@@ -1749,6 +1749,7 @@ private fun ExoPlayerSurface(
             this.player = player
         }
     }
+    val latestSubtitleCues = remember { mutableStateOf(emptyList<androidx.media3.common.text.Cue>()) }
 
     AndroidView(
         factory = { playerView },
@@ -1787,6 +1788,13 @@ private fun ExoPlayerSurface(
 
     DisposableEffect(player, playerView) {
         val listener = object : androidx.media3.common.Player.Listener {
+            override fun onCues(cueGroup: androidx.media3.common.text.CueGroup) {
+                latestSubtitleCues.value = cueGroup.cues
+                playerView.subtitleView?.setCues(
+                    cueGroup.cues.withSubtitleLineSpacing(latestSubtitleStyle.lineSpacing)
+                )
+            }
+
             override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
                 controller.videoAspectRatio = if (videoSize.width > 0 && videoSize.height > 0) {
                     videoSize.width.toFloat() * videoSize.pixelWidthHeightRatio / videoSize.height.toFloat()
@@ -1818,6 +1826,14 @@ private fun ExoPlayerSurface(
         }
         onDispose {
             player.removeListener(listener)
+        }
+    }
+
+    LaunchedEffect(playerView, subtitleStyle.lineSpacing) {
+        playerView.post {
+            playerView.subtitleView?.setCues(
+                latestSubtitleCues.value.withSubtitleLineSpacing(subtitleStyle.lineSpacing)
+            )
         }
     }
 
@@ -1960,6 +1976,38 @@ private fun PlayerView.applySubtitleStyleIfNeeded(
             val extraPadding = (height * (subtitleStyle.verticalOffset / 400f)).toInt().coerceAtLeast(0)
             setPadding(paddingLeft, paddingTop, paddingRight, extraPadding)
         }
+    }
+}
+
+private fun List<androidx.media3.common.text.Cue>.withSubtitleLineSpacing(
+    lineSpacing: Int
+): List<androidx.media3.common.text.Cue> {
+    if (lineSpacing == 100) return this
+    val multiplier = (lineSpacing / 100f).coerceIn(0.8f, 2f)
+    return map { cue ->
+        val text = cue.text ?: return@map cue
+        val styledText = android.text.SpannableString(text)
+        styledText.setSpan(
+            object : android.text.style.LineHeightSpan {
+                override fun chooseHeight(
+                    text: CharSequence,
+                    start: Int,
+                    end: Int,
+                    spanstartv: Int,
+                    v: Int,
+                    fm: android.graphics.Paint.FontMetricsInt
+                ) {
+                    val currentHeight = fm.descent - fm.ascent
+                    val targetHeight = (currentHeight * multiplier).toInt()
+                    fm.descent = fm.ascent + targetHeight
+                    fm.bottom = fm.top + targetHeight
+                }
+            },
+            0,
+            styledText.length,
+            android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        cue.buildUpon().setText(styledText).build()
     }
 }
 
