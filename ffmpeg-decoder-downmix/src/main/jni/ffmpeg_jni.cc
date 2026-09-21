@@ -157,6 +157,7 @@ int decodePacket(DecoderContext* decoderContext, AVPacket* packet,
                  uint8_t* outputBuffer, int outputSize,
                  jint userCenterMixLevelDb,
                  jboolean downmixNormalizationEnabled,
+                 jboolean downmixPeakLimiterEnabled,
                  GrowOutputBufferCallback growBuffer);
 
 /**
@@ -268,7 +269,8 @@ AUDIO_DECODER_FUNC(jint, ffmpegDecode, jlong context, jobject inputData,
                    jint inputSize, jobject decoderOutputBuffer,
                    jobject outputData, jint outputSize,
                    jint userCenterMixLevelDb,
-                   jboolean downmixNormalizationEnabled) {
+                   jboolean downmixNormalizationEnabled,
+                   jboolean downmixPeakLimiterEnabled) {
   if (!context) {
     LOGE("Context must be non-NULL.");
     return -1;
@@ -298,6 +300,7 @@ AUDIO_DECODER_FUNC(jint, ffmpegDecode, jlong context, jobject inputData,
       decodePacket((DecoderContext*)context, packet, outputBuffer, outputSize,
                    userCenterMixLevelDb,
                    downmixNormalizationEnabled,
+                   downmixPeakLimiterEnabled,
                    GrowOutputBufferCallback{env, thiz, decoderOutputBuffer});
   av_packet_free(&packet);
   return ret;
@@ -463,6 +466,7 @@ int decodePacket(DecoderContext* decoderContext, AVPacket* packet,
                  uint8_t* outputBuffer, int outputSize,
                  jint userCenterMixLevelDb,
                  jboolean downmixNormalizationEnabled,
+                 jboolean downmixPeakLimiterEnabled,
                  GrowOutputBufferCallback growBuffer) {
   AVCodecContext* codecContext = decoderContext->codec_context;
   int result = avcodec_send_packet(codecContext, packet);
@@ -520,7 +524,7 @@ int decodePacket(DecoderContext* decoderContext, AVPacket* packet,
         return AUDIO_DECODER_ERROR_INVALID_DATA;
       }
 
-      if (decoderContext->downmix_active) {
+      if (decoderContext->downmix_active && downmixPeakLimiterEnabled) {
         limitPlanarFloat(&decoderContext->limiter, converted_data,
                          convertedSamples, nb_channels, sampleRate);
       }
@@ -604,7 +608,7 @@ int decodePacket(DecoderContext* decoderContext, AVPacket* packet,
         logError("swr_convert", convertedSamples);
         return AUDIO_DECODER_ERROR_INVALID_DATA;
       }
-      if (decoderContext->downmix_active &&
+      if (decoderContext->downmix_active && downmixPeakLimiterEnabled &&
           decoderContext->output_sample_format == AV_SAMPLE_FMT_FLT) {
         limitInterleavedFloat(
             &decoderContext->limiter,

@@ -57,6 +57,7 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
   @Nullable private volatile String requestedOutputLayoutName;
   private volatile int requestedOutputChannelCount;
   private volatile boolean downmixNormalizationEnabled;
+  private volatile boolean downmixPeakLimiterEnabled = true;
   @Nullable private volatile FfmpegAudioDecoder activeDecoder;
   private volatile boolean rendererEnabled;
   private volatile boolean downmixActive;
@@ -216,6 +217,7 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
             outputEncoding);
     decoder.setUserCenterMixLevelDb(userCenterMixLevelDb);
     decoder.setDownmixNormalizationEnabled(downmixNormalizationEnabled);
+    decoder.setDownmixPeakLimiterEnabled(downmixPeakLimiterEnabled);
     activeDecoder = decoder;
     TraceUtil.endSection();
     return decoder;
@@ -261,6 +263,14 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
     @Nullable FfmpegAudioDecoder decoder = activeDecoder;
     if (decoder != null) {
       decoder.setDownmixNormalizationEnabled(downmixNormalizationEnabled);
+    }
+
+    public void setDownmixPeakLimiterEnabled(boolean enabled) {
+      downmixPeakLimiterEnabled = enabled;
+      @Nullable FfmpegAudioDecoder decoder = activeDecoder;
+      if (decoder != null) {
+        decoder.setDownmixPeakLimiterEnabled(enabled);
+      }
     }
   }
 

@@ -71,6 +71,7 @@ internal fun LazyListScope.trailerAndAudioSettingsItems(
     onShowDv7HandlingModeDialog: () -> Unit,
     onSetDownmixEnabled: (Boolean) -> Unit,
     onSetMaintainOriginalAudioOnDownmix: (Boolean) -> Unit,
+    onSetDownmixPeakLimiterEnabled: (Boolean) -> Unit,
     onSetSkipSilence: (Boolean) -> Unit,
     onSetRememberAudioDelayPerDevice: (Boolean) -> Unit,
     onSetTunnelingEnabled: (Boolean) -> Unit,
@@ -243,6 +244,18 @@ internal fun LazyListScope.trailerAndAudioSettingsItems(
                     subtitle = stringResource(R.string.audio_maintain_original_audio_on_downmix_subtitle),
                     isChecked = playerSettings.maintainOriginalAudioOnDownmix,
                     onCheckedChange = onSetMaintainOriginalAudioOnDownmix,
+                    onFocused = onItemFocused,
+                    enabled = enabled
+                )
+            }
+
+            item(key = "audio_downmix_peak_limiter") {
+                ToggleSettingsItem(
+                    icon = Icons.Default.Tune,
+                    title = stringResource(R.string.audio_downmix_peak_limiter_title),
+                    subtitle = stringResource(R.string.audio_downmix_peak_limiter_subtitle),
+                    isChecked = playerSettings.downmixPeakLimiterEnabled,
+                    onCheckedChange = onSetDownmixPeakLimiterEnabled,
                     onFocused = onItemFocused,
                     enabled = enabled
                 )

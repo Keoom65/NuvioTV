@@ -1805,6 +1805,8 @@
     <string name="audio_center_mix_unavailable">Center mix is only available when FFmpeg downmix is active.</string>
     <string name="audio_maintain_original_audio_on_downmix_title">Maintain original audio on downmix</string>
     <string name="audio_maintain_original_audio_on_downmix_subtitle">When disabled, downmix normalization can reduce overall volume.</string>
+    <string name="audio_downmix_peak_limiter_title">Downmix peak limiter</string>
+    <string name="audio_downmix_peak_limiter_subtitle">Prevent clipping after downmixing</string>
 
     <string name="subtitle_dialog_title">Subtitles</string>
     <string name="subtitle_no_builtin">No built-in subtitles available</string>

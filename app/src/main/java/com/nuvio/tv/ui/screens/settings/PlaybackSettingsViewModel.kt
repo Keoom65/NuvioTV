@@ -118,6 +118,10 @@ class PlaybackSettingsViewModel @Inject constructor(
         playerSettingsDataStore.setMaintainOriginalAudioOnDownmix(enabled)
     }
 
+    suspend fun setDownmixPeakLimiterEnabled(enabled: Boolean) {
+        playerSettingsDataStore.setDownmixPeakLimiterEnabled(enabled)
+    }
+
     suspend fun setTunnelingEnabled(enabled: Boolean) {
         playerSettingsDataStore.setTunnelingEnabled(enabled)
     }

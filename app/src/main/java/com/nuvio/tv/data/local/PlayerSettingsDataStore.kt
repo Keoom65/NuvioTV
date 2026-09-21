@@ -230,6 +230,7 @@ data class PlayerSettings(
     val downmixEnabled: Boolean = false,
     val audioOutputChannels: AudioOutputChannels = AudioOutputChannels.default,
     val maintainOriginalAudioOnDownmix: Boolean = true,
+    val downmixPeakLimiterEnabled: Boolean = true,
     val tunnelingEnabled: Boolean = false,
     val forceOpticalPassthrough: Boolean = false,
     val skipSilence: Boolean = false,
@@ -493,6 +494,8 @@ class PlayerSettingsDataStore @Inject constructor(
     private val audioOutputChannelsKey = stringPreferencesKey("audio_output_channels")
     private val maintainOriginalAudioOnDownmixKey =
         booleanPreferencesKey("maintain_original_audio_on_downmix")
+    private val downmixPeakLimiterEnabledKey =
+        booleanPreferencesKey("downmix_peak_limiter_enabled")
     private val downmixNormalizationEnabledLegacyKey =
         booleanPreferencesKey("downmix_normalization_enabled")
     private val tunnelingEnabledKey = booleanPreferencesKey("tunneling_enabled")
@@ -839,6 +842,7 @@ class PlayerSettingsDataStore @Inject constructor(
                 maintainOriginalAudioOnDownmix =
                     prefs[maintainOriginalAudioOnDownmixKey]
                         ?: !(prefs[downmixNormalizationEnabledLegacyKey] ?: false),
+                downmixPeakLimiterEnabled = prefs[downmixPeakLimiterEnabledKey] ?: true,
                 tunnelingEnabled = prefs[tunnelingEnabledKey] ?: false,
                 forceOpticalPassthrough = prefs[forceOpticalPassthroughKey] ?: false,
                 skipSilence = prefs[skipSilenceKey] ?: false,
@@ -1077,6 +1081,10 @@ class PlayerSettingsDataStore @Inject constructor(
             prefs[downmixEnabledKey] = true
             prefs[maintainOriginalAudioOnDownmixKey] = enabled
         }
+    }
+
+    suspend fun setDownmixPeakLimiterEnabled(enabled: Boolean) {
+        store().edit { prefs -> prefs[downmixPeakLimiterEnabledKey] = enabled }
     }
 
     suspend fun setTunnelingEnabled(enabled: Boolean) {

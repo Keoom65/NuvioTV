@@ -57,6 +57,7 @@ import java.util.List;
   private final @C.PcmEncoding int outputEncoding;
   private volatile int userCenterMixLevelDb;
   private volatile boolean downmixNormalizationEnabled;
+  private volatile boolean downmixPeakLimiterEnabled = true;
   private int outputBufferSize;
 
   private long nativeContext; // May be reassigned on resetting the codec.
@@ -142,7 +143,8 @@ import java.util.List;
             outputData,
             outputBufferSize,
             userCenterMixLevelDb,
-            downmixNormalizationEnabled);
+            downmixNormalizationEnabled,
+            downmixPeakLimiterEnabled);
     if (result == AUDIO_DECODER_ERROR_OTHER) {
       return new FfmpegDecoderException("Error decoding (see logcat).");
     } else if (result == AUDIO_DECODER_ERROR_INVALID_DATA) {
@@ -215,6 +217,10 @@ import java.util.List;
   /** Enables or disables downmix normalization. */
   public void setDownmixNormalizationEnabled(boolean downmixNormalizationEnabled) {
     this.downmixNormalizationEnabled = downmixNormalizationEnabled;
+  }
+
+  public void setDownmixPeakLimiterEnabled(boolean enabled) {
+    downmixPeakLimiterEnabled = enabled;
   }
 
   /**
@@ -348,7 +354,8 @@ import java.util.List;
       ByteBuffer outputData,
       int outputSize,
       int userCenterMixLevelDb,
-      boolean downmixNormalizationEnabled);
+      boolean downmixNormalizationEnabled,
+      boolean downmixPeakLimiterEnabled);
 
   private native int ffmpegGetChannelCount(long context);
 

@@ -905,6 +905,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                 downmixEnabled = effectiveDownmixEnabled,
                 audioOutputChannels = effectiveAudioOutputChannels,
                 downmixNormalizationEnabled = !playerSettings.maintainOriginalAudioOnDownmix,
+                downmixPeakLimiterEnabled = playerSettings.downmixPeakLimiterEnabled,
                 forceOpticalPassthrough = isForcePassthroughActive,
                 bluetoothForcePcm = isBluetoothAudioOutput,
                 playbackSpeedProvider = { _uiState.value.playbackSpeed },
@@ -917,6 +918,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                         downmixEnabled = effectiveDownmixEnabled,
                         audioOutputChannels = effectiveAudioOutputChannels,
                         downmixNormalizationEnabled = !playerSettings.maintainOriginalAudioOnDownmix,
+                        downmixPeakLimiterEnabled = playerSettings.downmixPeakLimiterEnabled,
                         forceOpticalPassthrough = isForcePassthroughActive
                     )
                     applyCenterMixLevel(_uiState.value.centerMixLevelDb)
@@ -2265,6 +2267,7 @@ private class SubtitleOffsetRenderersFactory(
                 downmixEnabled = downmixEnabled,
                 audioOutputChannels = audioOutputChannels,
                 downmixNormalizationEnabled = downmixNormalizationEnabled,
+                downmixPeakLimiterEnabled = downmixPeakLimiterEnabled,
                 forceOpticalPassthrough = forceOpticalPassthrough
             )
         }
@@ -2275,6 +2278,7 @@ private fun FfmpegAudioRenderer.applyDownmixSettings(
     downmixEnabled: Boolean,
     audioOutputChannels: com.nuvio.tv.data.local.AudioOutputChannels,
     downmixNormalizationEnabled: Boolean,
+    downmixPeakLimiterEnabled: Boolean,
     forceOpticalPassthrough: Boolean
 ) {
     setForceOpticalPassthrough(forceOpticalPassthrough)
@@ -2284,9 +2288,11 @@ private fun FfmpegAudioRenderer.applyDownmixSettings(
             audioOutputChannels.channelCount
         )
         setDownmixNormalizationEnabled(downmixNormalizationEnabled)
+        setDownmixPeakLimiterEnabled(downmixPeakLimiterEnabled)
     } else {
         setAudioOutputChannels(null, 0)
         setDownmixNormalizationEnabled(false)
+        setDownmixPeakLimiterEnabled(false)
     }
 }
 
