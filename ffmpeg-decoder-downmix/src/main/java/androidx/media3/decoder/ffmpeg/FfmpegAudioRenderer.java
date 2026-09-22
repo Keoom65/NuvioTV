@@ -258,6 +258,15 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
   }
 
   /** Sets whether downmix normalization should be enabled. */
+  public void setDownmixNormalizationEnabled(boolean downmixNormalizationEnabled) {
+    this.downmixNormalizationEnabled = downmixNormalizationEnabled;
+    @Nullable FfmpegAudioDecoder decoder = activeDecoder;
+    if (decoder != null) {
+      decoder.setDownmixNormalizationEnabled(downmixNormalizationEnabled);
+    }
+  }
+
+  /** Sets whether downmix normalization and peak limiting should be enabled. */
   public void setDownmixNormalizationEnabled(
       boolean downmixNormalizationEnabled, boolean downmixPeakLimiterEnabled) {
     this.downmixNormalizationEnabled = downmixNormalizationEnabled;
