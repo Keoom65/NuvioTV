@@ -264,13 +264,14 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
     if (decoder != null) {
       decoder.setDownmixNormalizationEnabled(downmixNormalizationEnabled);
     }
+  }
 
-    public void setDownmixPeakLimiterEnabled(boolean enabled) {
-      downmixPeakLimiterEnabled = enabled;
-      @Nullable FfmpegAudioDecoder decoder = activeDecoder;
-      if (decoder != null) {
-        decoder.setDownmixPeakLimiterEnabled(enabled);
-      }
+  /** Sets whether the post-downmix peak limiter should be enabled. */
+  public void setDownmixPeakLimiterEnabled(boolean enabled) {
+    downmixPeakLimiterEnabled = enabled;
+    @Nullable FfmpegAudioDecoder decoder = activeDecoder;
+    if (decoder != null) {
+      decoder.setDownmixPeakLimiterEnabled(enabled);
     }
   }
 
