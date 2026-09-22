@@ -2288,12 +2288,13 @@ private fun FfmpegAudioRenderer.applyDownmixSettings(
             audioOutputChannels.ffmpegLayoutName,
             audioOutputChannels.channelCount
         )
-        setDownmixNormalizationEnabled(downmixNormalizationEnabled)
-        setDownmixPeakLimiterEnabled(downmixPeakLimiterEnabled)
+        setDownmixNormalizationEnabled(
+            downmixNormalizationEnabled,
+            downmixPeakLimiterEnabled
+        )
     } else {
         setAudioOutputChannels(null, 0)
-        setDownmixNormalizationEnabled(false)
-        setDownmixPeakLimiterEnabled(false)
+        setDownmixNormalizationEnabled(false, false)
     }
 }
 
